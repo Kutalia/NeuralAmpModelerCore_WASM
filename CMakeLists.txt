@@ -16,13 +16,17 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	link_libraries(stdc++fs)
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	add_compile_definitions(NOMINMAX WIN32_LEAN_AND_MEAN)
-else()
+elseif (NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
 	message(FATAL_ERROR "Unrecognized Platform!")
 endif()
 
 set(NAM_DEPS_PATH "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies")
 
-add_subdirectory(tools)
+if (DEFINED EMSCRIPTEN)
+	add_subdirectory(wasmTools)
+else()
+	add_subdirectory(tools)
+endif()
 
 #file(MAKE_DIRECTORY build/tools)
 
