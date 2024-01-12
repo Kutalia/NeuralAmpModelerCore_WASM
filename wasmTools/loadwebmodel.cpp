@@ -24,9 +24,9 @@ float prevDCOutput = 0;
 
 void setDsp() {
   // loads wavenet based profile TODO:FIX
-	// currentModel = nam::get_dsp("evh.nam");
+	currentModel = nam::get_dsp("evh.nam");
   // loads lstm based profile
-	currentModel = nam::get_dsp("BossLSTM-1x16.nam");
+	// currentModel = nam::get_dsp("BossLSTM-1x16.nam");
 }
 
 void process(float* audio_in, float* audio_out, int n_samples)
@@ -39,7 +39,7 @@ void process(float* audio_in, float* audio_out, int n_samples)
 	if (fabs(desiredInputLevel - inputLevel) > SMOOTH_EPSILON)
 	{
 		level = inputLevel;
-		for (unsigned int i = 0; i < n_samples; i++)
+		for (int i = 0; i < n_samples; i++)
 		{
 			// do very basic smoothing
 			level = (.99f * level) + (.01f * desiredInputLevel);
@@ -53,7 +53,7 @@ void process(float* audio_in, float* audio_out, int n_samples)
 	{
 		level = inputLevel = desiredInputLevel;
 
-		for (unsigned int i = 0; i < n_samples; i++)
+		for (int i = 0; i < n_samples; i++)
 		{
 			audio_out[i] = audio_in[i] * level;
 		}
@@ -80,7 +80,7 @@ void process(float* audio_in, float* audio_out, int n_samples)
 	{
 		level = outputLevel;
 
-		for (unsigned int i = 0; i < n_samples; i++)
+		for (int i = 0; i < n_samples; i++)
 		{
 			// do very basic smoothing
 			level = (.99f * level) + (.01f * desiredOutputLevel);
@@ -94,13 +94,13 @@ void process(float* audio_in, float* audio_out, int n_samples)
 	{
 		level = outputLevel = desiredOutputLevel;
 
-		for (unsigned int i = 0; i < n_samples; i++)
+		for (int i = 0; i < n_samples; i++)
 		{
 			audio_out[i] = audio_out[i] * level;
 		}
 	}
 
-	for (unsigned int i = 0; i < n_samples; i++)
+	for (int i = 0; i < n_samples; i++)
 	{
 		float dcInput = audio_out[i];
 
