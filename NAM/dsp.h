@@ -204,6 +204,8 @@ std::unique_ptr<DSP> get_dsp(const std::filesystem::path model_file);
 std::unique_ptr<DSP> get_dsp(const std::filesystem::path model_file, dspData& returnedConfig);
 // Instantiates a DSP object from dsp_config struct.
 std::unique_ptr<DSP> get_dsp(dspData& conf);
+// Load dsp directly from JSON string (useful for the web)
+std::unique_ptr<DSP> get_dsp(const char* jsonStr);
 // Legacy loader for directory-type DSPs
 std::unique_ptr<DSP> get_dsp_legacy(const std::filesystem::path dirname);
 }; // namespace nam

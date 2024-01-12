@@ -80,6 +80,20 @@ std::vector<float> GetWeights(nlohmann::json const& j, const std::filesystem::pa
     throw std::runtime_error("Corrupted model file is missing weights.");
 }
 
+std::vector<float> GetWeights(nlohmann::json const& j)
+{
+  if (j.find("weights") != j.end())
+  {
+    auto weight_list = j["weights"];
+    std::vector<float> weights;
+    for (auto it = weight_list.begin(); it != weight_list.end(); ++it)
+      weights.push_back(*it);
+    return weights;
+  }
+  else
+    throw std::runtime_error("Corrupted model file is missing weights.");
+}
+
 std::unique_ptr<DSP> get_dsp(const std::filesystem::path config_filename)
 {
   dspData temp;
@@ -118,6 +132,40 @@ std::unique_ptr<DSP> get_dsp(const std::filesystem::path config_filename, dspDat
    model constructors inside get_dsp(dsp_config& conf).
    We need to return unmodified version of dsp_config via returnedConfig.*/
   dspData conf = returnedConfig;
+
+  return get_dsp(conf);
+}
+
+std::unique_ptr<DSP> get_dsp(const char* jsonStr)
+{
+  nlohmann::json j = nlohmann::json::parse(jsonStr);
+  verify_config_version(j["version"]);
+
+  dspData tempConfig;
+
+  auto architecture = j["architecture"];
+  nlohmann::json config = j["config"];
+  std::vector<float> weights = GetWeights(j);
+
+  // Assign values to tempConfig
+  tempConfig.version = j["version"];
+  tempConfig.architecture = j["architecture"];
+  tempConfig.config = j["config"];
+  tempConfig.metadata = j["metadata"];
+  tempConfig.weights = weights;
+  if (j.find("sample_rate") != j.end())
+    tempConfig.expected_sample_rate = j["sample_rate"];
+  else
+  {
+    tempConfig.expected_sample_rate = -1.0;
+  }
+
+
+  /*Copy to a new dsp_config object for get_dsp below,
+   since not sure if weights actually get modified as being non-const references on some
+   model constructors inside get_dsp(dsp_config& conf).
+   We need to return unmodified version of dsp_config via tempConfig.*/
+  dspData conf = tempConfig;
 
   return get_dsp(conf);
 }

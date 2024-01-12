@@ -22,13 +22,6 @@ std::unique_ptr<nam::DSP> currentModel = nullptr;
 float prevDCInput = 0;
 float prevDCOutput = 0;
 
-void setDsp() {
-  // loads wavenet based profile
-	currentModel = nam::get_dsp("evh.nam");
-  // loads lstm based profile
-	// currentModel = nam::get_dsp("BossLSTM-1x16.nam");
-}
-
 void process(float* audio_in, float* audio_out, int n_samples)
 {
 	float level;
@@ -151,7 +144,6 @@ void AudioWorkletProcessorCreated(EMSCRIPTEN_WEBAUDIO_T audioContext, EM_BOOL su
   // Connect it to audio context destination
   EM_ASM(
 		{
-			// emscriptenGetAudioObject($0).connect(emscriptenGetAudioObject($1).destination);
 			window.audioCtx1 = emscriptenGetAudioObject($0);
 			window.audioCtx2 = emscriptenGetAudioObject($1);
 		},
@@ -171,13 +163,24 @@ void AudioThreadInitialized(EMSCRIPTEN_WEBAUDIO_T audioContext, EM_BOOL success,
   emscripten_create_wasm_audio_worklet_processor_async(audioContext, &opts, &AudioWorkletProcessorCreated, 0);
 }
 
-int main()
-{
-	setDsp();
+extern "C" {
+  void setDsp(const char* jsonStr) {
+    // loads wavenet based profile
+    // currentModel = nam::get_dsp("evh.nam");
+    // loads lstm based profile
+    // currentModel = nam::get_dsp("BossLSTM-1x16.nam");
 
-  EMSCRIPTEN_WEBAUDIO_T context = emscripten_create_audio_context(0);
+    if (currentModel == nullptr) {
+      EMSCRIPTEN_WEBAUDIO_T context = emscripten_create_audio_context(0);
 
-  emscripten_start_wasm_audio_worklet_thread_async(context, audioThreadStack, sizeof(audioThreadStack),
-                                                   &AudioThreadInitialized, 0);
+      emscripten_start_wasm_audio_worklet_thread_async(context, audioThreadStack, sizeof(audioThreadStack),
+                                                    &AudioThreadInitialized, 0);
+
+    }
+
+    // TODO: investigate possible latency add after adding model second time
+    // this could be achieved by using audio worklet processor messages port instead of direct call here
+    currentModel = nam::get_dsp(jsonStr);
+  }
 }
 
