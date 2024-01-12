@@ -2,6 +2,11 @@
 The project compiles the code to WASM using emscripten.
 It even generates glue JavaScript code to set a Web Audio Worklet and an Audio Context, so you can easily consume them in your webpage.
 
+### Caveats:
+Currently for some mysterious reason Chromium based browsers (Microsoft Edge, Google Chrome) cause additional background noise on high gain profiles.
+I have built and run a website on Mozilla Firefox (beta) and the issue was not persistent.
+So I highly recommend using it.
+
 ### Building:
 You will need to install [Emscripten](https://emscripten.org/docs/getting_started/downloads.html "Emscripten") to build this project, along with [CMake](https://cmake.org/ "CMake") (I personally use [Ninja](https://ninja-build.org/ "Ninja") generator with it on Windows 11)
 Run the following script in your script:

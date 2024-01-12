@@ -23,7 +23,7 @@ float prevDCInput = 0;
 float prevDCOutput = 0;
 
 void setDsp() {
-  // loads wavenet based profile TODO:FIX
+  // loads wavenet based profile
 	currentModel = nam::get_dsp("evh.nam");
   // loads lstm based profile
 	// currentModel = nam::get_dsp("BossLSTM-1x16.nam");
