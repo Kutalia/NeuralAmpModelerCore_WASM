@@ -117,7 +117,7 @@ EM_BOOL NamProcessor(int numInputs, const AudioSampleFrame *inputs,
   return EM_TRUE; // Keep the graph output going
 }
 
-EM_BOOL OnCanvasClick(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
+EM_BOOL OnElementClick(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
 {
   EMSCRIPTEN_WEBAUDIO_T audioContext = (EMSCRIPTEN_WEBAUDIO_T)userData;
   if (emscripten_audio_context_state(audioContext) != AUDIO_CONTEXT_STATE_RUNNING) {
@@ -140,18 +140,20 @@ void AudioWorkletProcessorCreated(EMSCRIPTEN_WEBAUDIO_T audioContext, EM_BOOL su
   // Create node
   EMSCRIPTEN_AUDIO_WORKLET_NODE_T wasmAudioWorklet = emscripten_create_wasm_audio_worklet_node(audioContext,
                                                             "nam-worklet", &options, &NamProcessor, 0);
-
-  // Connect it to audio context destination
+																														
   EM_ASM(
 		{
-			window.audioCtx1 = emscriptenGetAudioObject($0);
-			window.audioCtx2 = emscriptenGetAudioObject($1);
+			// create global callback in your code
+			// the first argument is audioContext, the second one - worklet node
+			if (window.wasmAudioWorkletCreated) {
+				window.wasmAudioWorkletCreated(emscriptenGetAudioObject($0), emscriptenGetAudioObject($1));
+			}
 		},
     wasmAudioWorklet, audioContext
 	);
 
-  // Resume context on mouse click
-  emscripten_set_click_callback("canvas", (void*)audioContext, 0, OnCanvasClick);
+  // Resume context on mouse click on a specific element created in your html file
+  emscripten_set_click_callback("#audio-worklet-resumer", (void*)audioContext, 0, OnElementClick);
 }
 
 void AudioThreadInitialized(EMSCRIPTEN_WEBAUDIO_T audioContext, EM_BOOL success, void *userData)
