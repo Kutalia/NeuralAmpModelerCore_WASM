@@ -17,6 +17,7 @@ float outputLevel = 0;
 float input_level = 0;
 // default output level
 float output_level = 0;
+bool loading = false;
 
 std::unique_ptr<nam::DSP> currentModel = nullptr;
 float prevDCInput = 0;
@@ -105,16 +106,20 @@ void process(float* audio_in, float* audio_out, int n_samples)
 	}
 }
 
-uint8_t audioThreadStack[4096];
+uint8_t audioThreadStack[16384 * 32];
 
 EM_BOOL NamProcessor(int numInputs, const AudioSampleFrame *inputs,
                       int numOutputs, AudioSampleFrame *outputs,
                       int numParams, const AudioParamFrame *params,
                       void *userData)
 {
-	process(inputs[0].data, outputs[0].data, 128);
-  
-  return EM_TRUE; // Keep the graph output going
+	if (loading == false) {
+		process(inputs[0].data, outputs[0].data, 128);
+		
+		return EM_TRUE; // Keep the graph output going
+	} else {
+		return EM_FALSE;
+	}
 }
 
 EM_BOOL OnElementClick(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
@@ -167,22 +172,31 @@ void AudioThreadInitialized(EMSCRIPTEN_WEBAUDIO_T audioContext, EM_BOOL success,
 
 extern "C" {
   void setDsp(const char* jsonStr) {
-    // loads wavenet based profile
-    // currentModel = nam::get_dsp("evh.nam");
-    // loads lstm based profile
-    // currentModel = nam::get_dsp("BossLSTM-1x16.nam");
+		std::unique_ptr<nam::DSP> tmp = nullptr;
 
-    if (currentModel == nullptr) {
+		loading = true;
+		tmp = nam::get_dsp(jsonStr);
+
+		if (currentModel == nullptr) {
+			currentModel = std::move(tmp);
+
       EMSCRIPTEN_WEBAUDIO_T context = emscripten_create_audio_context(0);
 
       emscripten_start_wasm_audio_worklet_thread_async(context, audioThreadStack, sizeof(audioThreadStack),
                                                     &AudioThreadInitialized, 0);
+    } else {
+			currentModel.reset();
+			currentModel = std::move(tmp);
+		}
 
-    }
-
-    // TODO: investigate possible latency add after adding model second time
-    // this could be achieved by using audio worklet processor messages port instead of direct call here
-    currentModel = nam::get_dsp(jsonStr);
+		loading = false;
   }
+
+	int main() {
+		// Turn on fast tanh approximation
+		nam::activations::Activation::enable_fast_tanh();
+
+		return 1;
+	}
 }
 

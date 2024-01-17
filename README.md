@@ -16,25 +16,11 @@ emcmake cmake .. -DCMAKE_BUILD_TYPE="Release"
 cmake --build . --config=release -j4
 ```
 Or if you use Windows just double click on the **build_wasm.bat** in the **scripts** folder.
+**Notice**: *as of writing this, Emscripten linker is bugged which is not allowing successful building. If that's a case with you, install the working version using `emsdk install 3.1.41`*
 
-### Example:
-1) Import the main JS file: `<script type="text/javascript" src="loadwebmodel.js"></script>`
-2) Execute the following code in your JS once the WASM is loaded (wait for some time, add the code to some DOM event handler, etc.):
-```
-const stream = await navigator.mediaDevices.getUserMedia({
-      audio: {
-        autoGainControl: false,
-        echoCancellation: false,
-        noiseSuppression: false,
-        sampleRate: 48000,
-      }
-    });
-window.audioCtx2.resume();
-const microphoneStreamNode = window.audioCtx2.createMediaStreamSource(stream);
-microphoneStreamNode.connect(window.audioCtx1); 
-window.audioCtx1.connect(window.audioCtx2.destination);
-	```
-3) Add IR or other effects with your flavor
+### Usage:
+You can see a working demostration in this repository:
+[https://github.com/Kutalia/neural-amp-modeler-react](https://github.com/Kutalia/neural-amp-modeler-react "https://github.com/Kutalia/neural-amp-modeler-react")
 
 *The project uses a tiny bit of code from the [unofficial NAM LV2 plugin](https://github.com/mikeoliphant/neural-amp-modeler-lv2 "unofficial NAM LV2 plugin").*
 
