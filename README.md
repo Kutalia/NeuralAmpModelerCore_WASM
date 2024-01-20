@@ -16,7 +16,7 @@ emcmake cmake .. -DCMAKE_BUILD_TYPE="Release"
 cmake --build . --config=release -j4
 ```
 Or if you use Windows just double click on the **build_wasm.bat** in the **scripts** folder.
-**Notice**: *as of writing this, Emscripten linker is bugged which is not allowing successful building. If that's a case with you, install the working version using `emsdk install 3.1.41`*
+**Notice**: *as of writing this, Emscripten linker is bugged which is not allowing successful building. If that's a case with you, install the working version using `emsdk install 3.1.41, although you might have to manually fix a syntax error in the generated JS file. Another alternative is to use latest emsdk and remove -pthread linker flag.`*
 
 ### Usage:
 You can see a working demostration in this repository:

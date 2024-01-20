@@ -11,6 +11,7 @@ include_directories(tools ${NAM_DEPS_PATH}/nlohmann)
 
 add_executable(loadwebmodel loadwebmodel.cpp ${NAM_SOURCES})
 
+# Web Audio only supports 32-bit float processing
 add_definitions(-DNAM_SAMPLE_FLOAT)
 add_definitions(-DEIGEN_STACK_ALLOCATION_LIMIT=0)
 
@@ -26,7 +27,7 @@ set_target_properties(${TOOLS}
 )
 
 set_target_properties(loadwebmodel PROPERTIES COMPILE_FLAGS "-Os -pthread")
-set_target_properties(loadwebmodel PROPERTIES LINK_FLAGS "-Os -sEXPORTED_FUNCTIONS=stringToUTF8,_malloc,_setDsp,_free -sENVIRONMENT=web,worker -sEXPORTED_RUNTIME_METHODS=ccall -sAUDIO_WORKLET -sWASM_WORKERS -sALLOW_MEMORY_GROWTH -sINITIAL_MEMORY=1024MB -sTOTAL_STACK=512MB -sASYNCIFY -pthread")
+set_target_properties(loadwebmodel PROPERTIES LINK_FLAGS "-Os -sEXPORTED_FUNCTIONS=stringToUTF8,_malloc,_setDsp,_free -sENVIRONMENT=web,worker -sEXPORTED_RUNTIME_METHODS=ccall -sAUDIO_WORKLET -sWASM_WORKERS -sALLOW_MEMORY_GROWTH -sINITIAL_MEMORY=1024MB -sTOTAL_STACK=512MB -sASYNCIFY -sMODULARIZE -sASSERTIONS -sWEBAUDIO_DEBUG -sEXPORT_NAME=coreModule -sEXPORT_ES6=1")
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 	target_compile_definitions(${TOOLS} PRIVATE NOMINMAX WIN32_LEAN_AND_MEAN)
