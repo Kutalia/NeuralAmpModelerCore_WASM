@@ -81,6 +81,7 @@
     "xtr1common": "cpp",
     "xtree": "cpp",
     "xutility": "cpp",
-    "alignedvector3": "cpp"
+    "alignedvector3": "cpp",
+    "*.inc": "cpp"
   }
 }

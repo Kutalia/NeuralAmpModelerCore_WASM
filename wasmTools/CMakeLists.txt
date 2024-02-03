@@ -1,4 +1,4 @@
-file(GLOB_RECURSE NAM_SOURCES ../NAM/*.cpp ../NAM/*.c ../NAM*.h)
+file(GLOB_RECURSE NAM_SOURCES ../NAM/*.cpp ../NAM/*.c ../NAM*.h ../AudioDSPTools/*.cpp ../AudioDSPTools*.h)
 
 set(TOOLS loadwebmodel)
 
@@ -12,7 +12,10 @@ include_directories(tools ${NAM_DEPS_PATH}/nlohmann)
 add_executable(loadwebmodel loadwebmodel.cpp ${NAM_SOURCES})
 
 add_definitions(-DNAM_SAMPLE_FLOAT)
+add_definitions(-DDSP_SAMPLE_FLOAT)
 add_definitions(-DEIGEN_STACK_ALLOCATION_LIMIT=0)
+# not strictly necessary, just trying
+add_definitions(-DEIGEN_DONT_VECTORIZE)
 
 source_group(NAM ${CMAKE_CURRENT_SOURCE_DIR} FILES ${NAM_SOURCES})
 
