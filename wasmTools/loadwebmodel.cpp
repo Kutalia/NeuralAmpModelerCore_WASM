@@ -25,13 +25,13 @@ const int numberOfChannels = 1;
 
 // naming conflict on just "time"
 const float gateTime = 0.01;
-const float threshold = -80; // GetParam... a value between -100 and 0, knob step 0.1
+float threshold = -80; // GetParam... a value between -100 and 0, knob step 0.1
 const float ratio = 0.1; // Quadratic...
 const float openTime = 0.005;
 const float holdTime = 0.01;
 const float closeTime = 0.05;
 bool noiseGateActive = true;
-const int sampleRate = 48000;
+unsigned int sampleRate = 48000;
 
 std::unique_ptr<nam::DSP> currentModel = nullptr;
 float prevDCInput = 0;
@@ -212,6 +212,17 @@ void AudioThreadInitialized(EMSCRIPTEN_WEBAUDIO_T audioContext, EM_BOOL success,
   emscripten_create_wasm_audio_worklet_processor_async(audioContext, &opts, &AudioWorkletProcessorCreated, 0);
 }
 
+unsigned query_sample_rate_of_audiocontexts()
+{
+  return EM_ASM_INT({
+    var AudioContext = window.AudioContext || window.webkitAudioContext;
+    var ctx = new AudioContext();
+    var sr = ctx.sampleRate;
+    ctx.close();
+    return sr;
+  });
+}
+
 extern "C" {
 void setDsp(const char* jsonStr)
 {
@@ -220,12 +231,20 @@ void setDsp(const char* jsonStr)
   loading = true;
   tmp = nam::get_dsp(jsonStr);
 
+  // initializations
   if (currentModel == nullptr)
   {
+    // Turn on fast tanh approximation
+    nam::activations::Activation::enable_fast_tanh();
+
     mNoiseGateTrigger.AddListener(&mNoiseGateGain);
     currentModel = std::move(tmp);
 
-    EMSCRIPTEN_WEBAUDIO_T context = emscripten_create_audio_context(0);
+    sampleRate = query_sample_rate_of_audiocontexts();
+
+    EmscriptenWebAudioCreateAttributes attrs = {.latencyHint = "interactive", .sampleRate = sampleRate};
+
+    EMSCRIPTEN_WEBAUDIO_T context = emscripten_create_audio_context(&attrs);
 
     emscripten_start_wasm_audio_worklet_thread_async(
       context, audioThreadStack, sizeof(audioThreadStack), &AudioThreadInitialized, 0);
@@ -239,11 +258,13 @@ void setDsp(const char* jsonStr)
   loading = false;
 }
 
-int main()
+void setNoiseGateState(bool active)
 {
-  // Turn on fast tanh approximation
-  nam::activations::Activation::enable_fast_tanh();
+  noiseGateActive = active;
+}
 
-  return 1;
+void setNoiseGateThreshold(float _threshold)
+{
+  threshold = _threshold;
 }
 }
