@@ -75,7 +75,7 @@ void process(float* audio_in, float* audio_out, int n_samples)
   if (currentModel != nullptr)
   {
     float** triggerOutput = new float*[numberOfChannels];
-    triggerOutput[0] = audio_in;
+    triggerOutput[0] = audio_out;
     float** audio_in_arr = new float*[numberOfChannels];
     audio_in_arr[0] = audio_in;
     float** audio_out_arr = new float*[numberOfChannels];
